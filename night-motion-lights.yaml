@@ -53,14 +53,11 @@ action:
     target: !input light_target
   - alias: "Wait until there is no motion from ALL sensors"
     wait_for_trigger:
-      - platform: state
-        entity_id: !input motion_entities
-        from: "on"
-        to: "off"
-  - alias: "Check all sensors are clear before countdown"
-    condition: template
-    value_template: >
-      {{ expand(motion_entities) | selectattr('state', 'eq', 'on') | list | count == 0 }}
+      - platform: template
+        value_template: >
+          {{ expand(motion_entities) | selectattr('state', 'eq', 'on') | list | count == 0 }}
+    timeout:
+      hours: 1
   - alias: "Wait the number of seconds that has been set"
     delay: !input no_motion_wait
   - alias: "Turn off the light"
