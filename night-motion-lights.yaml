@@ -2,7 +2,7 @@ blueprint:
   name: Motion-activated Light (Multi-Sensor)
   description: Turn on a light when motion is detected from one or more sensors.
   domain: automation
-  source_url: https://github.com/home-assistant/core/blob/a90ef3a5752d39b13ec57c7acee83cc36c0cd3bd/homeassistant/components/automation/blueprints/motion_light.yaml
+  source_url: https://raw.githubusercontent.com/yahell100/hsblueprints/refs/heads/main/night-motion-lights.yaml
   input:
     motion_entities:
       name: Motion Sensors
@@ -65,3 +65,4 @@ action:
   - alias: "Turn off the light"
     service: light.turn_off
     target: !input light_target
+
