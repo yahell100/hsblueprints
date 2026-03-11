@@ -1,13 +1,15 @@
 blueprint:
-  name: Motion-activated Light
-  description: Turn on a light when motion is detected.
+  name: Motion-activated Light (Multi-Sensor)
+  description: Turn on a light when motion is detected from one or more sensors.
   domain: automation
   source_url: https://github.com/home-assistant/core/blob/a90ef3a5752d39b13ec57c7acee83cc36c0cd3bd/homeassistant/components/automation/blueprints/motion_light.yaml
   input:
-    motion_entity:
-      name: Motion Sensor
+    motion_entities:
+      name: Motion Sensors
+      description: Select one or more motion sensors.
       selector:
         entity:
+          multiple: true
           domain: binary_sensor
           device_class: motion
     light_target:
@@ -26,16 +28,15 @@ blueprint:
           max: 3600
           unit_of_measurement: seconds
 
-# If motion is detected within the delay,
-# we restart the script.
 mode: restart
 max_exceeded: silent
 
 trigger:
   platform: state
-  entity_id: !input motion_entity
+  entity_id: !input motion_entities
   from: "off"
   to: "on"
+
 condition:
   - condition: not
     conditions:
@@ -44,16 +45,21 @@ condition:
         after_offset: '+01:00:00'
         before: sunset
         before_offset: '-01:00:00'
+
 action:
   - alias: "Turn on the light"
     service: light.turn_on
     target: !input light_target
-  - alias: "Wait until there is no motion from device"
+  - alias: "Wait until there is no motion from ALL sensors"
     wait_for_trigger:
-      platform: state
-      entity_id: !input motion_entity
-      from: "on"
-      to: "off"
+      - platform: state
+        entity_id: !input motion_entities
+        from: "on"
+        to: "off"
+  - alias: "Check all sensors are clear before countdown"
+    condition: template
+    value_template: >
+      {{ expand(motion_entities) | selectattr('state', 'eq', 'on') | list | count == 0 }}
   - alias: "Wait the number of seconds that has been set"
     delay: !input no_motion_wait
   - alias: "Turn off the light"
